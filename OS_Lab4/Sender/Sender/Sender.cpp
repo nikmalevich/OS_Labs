@@ -24,17 +24,17 @@ int main(int argc, char* argv[])
 
     ofstream out_file(filename, ios::binary);
     char command;
-    char message[20] = "zxcvbnmasdfghjklqwe";
+    char message[] = "my senders message!";
 
     while (true) {
-        cout << "Do you want to continue working? Enter y(yes) or n(no): ";
+        cout << "Do you want to continue working? If you want, enter 'y': ";
         cin >> command;
 
         if (command == 'y') {
             WaitForSingleObject(h_empty_semaphore, INFINITE);
             WaitForSingleObject(h_mutex, INFINITE);
 
-            out_file.write(reinterpret_cast<char*>(message), sizeof(char)* 20);
+            out_file.write(message, sizeof(message));
 
             ReleaseMutex(h_mutex);
             ReleaseSemaphore(h_record_semaphore, 1, NULL);

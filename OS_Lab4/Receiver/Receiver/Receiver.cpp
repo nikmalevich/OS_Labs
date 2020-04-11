@@ -51,21 +51,24 @@ int main()
     ifstream in_file(filename, ios::binary);
     
     while (true) {
-        cout << "Do you want to continue working? Enter y(yes) or n(no): ";
+        cout << "Do you want to continue working? If you want, enter 'y': ";
         cin >> command;
 
         if (command == 'y') {
             WaitForSingleObject(h_record_semaphore, INFINITE);
             WaitForSingleObject(h_mutex, INFINITE);
 
-            in_file.read(reinterpret_cast<char*>(message), sizeof(char) * 20);
-            cout << message << endl;
+            in_file.read(message, sizeof(message));
 
             ReleaseMutex(h_mutex);
             ReleaseSemaphore(h_empty_semaphore, 1, NULL);
         }
-        else
+        else {
+            for (int i = 0; i < num_processes; i++)
+                TerminateProcess(senders_pi[i].hProcess, 0);
+
             break;
+        }
 
     }
 
