@@ -20,8 +20,6 @@ int main()
     cout << "Enter number of processes: ";
     cin >> num_processes;
 
-    ofstream out_file(filename, ios::binary);
-
     wchar_t sender_com_line[100];
     wchar_t event_name[30];
     STARTUPINFO* senders_si = new STARTUPINFO[num_processes];
@@ -48,7 +46,14 @@ int main()
 
     char command;
     char message[20];
-    ifstream in_file(filename, ios::binary);
+    int num_readed_messages = 0;
+    fstream file(filename, fstream::binary | fstream::in | fstream::out | fstream::trunc);
+
+    file.write(reinterpret_cast<char*>(&num_readed_messages), sizeof(num_readed_messages));
+    file.seekp(sizeof(num_readed_messages));
+    file.write(reinterpret_cast<char*>(&num_readed_messages), sizeof(num_readed_messages));
+
+    file.close();
     
     while (true) {
         cout << "Do you want to continue working? If you want, enter 'y': ";
@@ -58,7 +63,21 @@ int main()
             WaitForSingleObject(h_record_semaphore, INFINITE);
             WaitForSingleObject(h_mutex, INFINITE);
 
-            in_file.read(message, sizeof(message));
+            fstream file(filename, fstream::binary | fstream::in | fstream::out);
+
+            file.seekp(sizeof(num_readed_messages));
+            file.read(reinterpret_cast<char*>(&num_readed_messages), sizeof(num_readed_messages));
+            file.seekp(2 * sizeof(num_readed_messages) + num_readed_messages * sizeof(message));
+            file.read(message, sizeof(message));
+
+            cout << "Message: " << message << endl;
+            
+            num_readed_messages++;
+
+            file.seekp(sizeof(num_readed_messages));
+            file.write(reinterpret_cast<char*>(&num_readed_messages), sizeof(num_readed_messages));
+
+            file.close();
 
             ReleaseMutex(h_mutex);
             ReleaseSemaphore(h_empty_semaphore, 1, NULL);
@@ -83,8 +102,6 @@ int main()
     delete[] senders_si;
     delete[] senders_pi;
     delete[] h_start_events;
-    in_file.close();
-    out_file.close();
     
     return 0;
 }

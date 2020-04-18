@@ -22,9 +22,9 @@ int main(int argc, char* argv[])
 
     SetEvent(h_start_event);
 
-    ofstream out_file(filename, ios::binary);
     char command;
-    char message[] = "my senders message!";
+    char message[20];
+    int num_recorded_messages;
 
     while (true) {
         cout << "Do you want to continue working? If you want, enter 'y': ";
@@ -34,7 +34,22 @@ int main(int argc, char* argv[])
             WaitForSingleObject(h_empty_semaphore, INFINITE);
             WaitForSingleObject(h_mutex, INFINITE);
 
-            out_file.write(message, sizeof(message));
+            fstream file(filename, fstream::binary | fstream::in | fstream::out);
+
+            cout << "Enter message: ";
+            cin >> message;
+
+            file.seekp(0);
+            file.read(reinterpret_cast<char*>(&num_recorded_messages), sizeof(num_recorded_messages));
+            file.seekp(2 * sizeof(num_recorded_messages) + num_recorded_messages * sizeof(message));
+            file.write(message, sizeof(message));
+
+            num_recorded_messages++;
+
+            file.seekp(0);
+            file.write(reinterpret_cast<char*>(&num_recorded_messages), sizeof(num_recorded_messages));
+
+            file.close();
 
             ReleaseMutex(h_mutex);
             ReleaseSemaphore(h_record_semaphore, 1, NULL);
@@ -42,8 +57,6 @@ int main(int argc, char* argv[])
         else
             break;
     }
-
-    out_file.close();
 
     return 0;
 }
