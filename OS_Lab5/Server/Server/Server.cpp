@@ -8,7 +8,6 @@
 
 using namespace std;
 
-
 int main()
 {
     wchar_t filename[20];
@@ -49,6 +48,37 @@ int main()
         cout << employees[i].num << "; " << employees[i].name << "; " << employees[i].hours << endl;
 
     file.close();
+
+    int num_clients;
+
+    cout << "Enter number of Clients: ";
+    cin >> num_clients;
+
+    HANDLE hNamedPipe = CreateNamedPipe(
+        filename,
+        PIPE_ACCESS_DUPLEX,
+        PIPE_TYPE_MESSAGE | PIPE_WAIT,
+        num_clients,
+        0,
+        0,
+        INFINITE,
+        (LPSECURITY_ATTRIBUTES)NULL
+    );
+
+    wchar_t client_com_line[20];
+    STARTUPINFO* clients_si = new STARTUPINFO[num_clients];
+    PROCESS_INFORMATION* clients_pi = new PROCESS_INFORMATION[num_clients];
+
+    wsprintf(client_com_line, L"Client.exe %ls", filename);
+
+    for (int i = 0; i < num_clients; i++) {
+        ZeroMemory(&clients_si[i], sizeof(STARTUPINFO));
+        clients_si[i].cb = sizeof(STARTUPINFO);
+
+        CreateProcess(NULL, client_com_line, NULL, NULL, TRUE, CREATE_NEW_CONSOLE, NULL, NULL, &clients_si[i], &clients_pi[i]);
+    }
+
+
     
     return 0;
 }

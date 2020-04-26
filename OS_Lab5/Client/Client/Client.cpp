@@ -1,12 +1,24 @@
 ﻿// Client.cpp : Этот файл содержит функцию "main". Здесь начинается и заканчивается выполнение программы.
 //
 
+#include <Windows.h>
 #include <iostream>
 #include <fstream>
 
-int main()
+int main(int argc, char* argv[])
 {
-    
+    wchar_t filename[20];
+
+    mbstowcs(filename, argv[1], 20);
+
+	HANDLE hNamedPipe = CreateFile(
+        filename,
+        GENERIC_READ | GENERIC_WRITE,
+        0,
+        NULL,
+        OPEN_EXISTING,
+        0,
+        NULL);
     
     return 0;
 }
