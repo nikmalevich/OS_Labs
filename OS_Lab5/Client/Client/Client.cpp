@@ -4,21 +4,62 @@
 #include <Windows.h>
 #include <iostream>
 #include <fstream>
+#include "Employee.h"
 
-int main(int argc, char* argv[])
+using namespace std;
+
+int main()
 {
-    wchar_t filename[20];
+	HANDLE h_named_pipe = CreateFile(L"\\\\.\\pipe\\example_pipe", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_EXISTING, NULL, NULL);
 
-    mbstowcs(filename, argv[1], 20);
+    while (true) {
+        char operation;
+        char complete = 'c';
+        char new_employee = 'n';
 
-	HANDLE hNamedPipe = CreateFile(
-        filename,
-        GENERIC_READ | GENERIC_WRITE,
-        0,
-        NULL,
-        OPEN_EXISTING,
-        0,
-        NULL);
+        cout << "Enter the operation. Write(w), read(r), exit(e): ";
+        cin >> operation;
+
+        int employee_id;
+
+        cout << "Enter employee ID: ";
+        cin >> employee_id;
+
+        WriteFile(h_named_pipe, &operation, sizeof(char), NULL, NULL);
+
+        if (operation == 'e') {
+            break;
+        }
+
+        WriteFile(h_named_pipe, &employee_id, sizeof(int), NULL, NULL);
+
+        Employee employee;
+
+        ReadFile(h_named_pipe, &employee, sizeof(Employee), NULL, NULL);
+
+        cout << employee.num << "; " << employee.name << "; " << employee.hours << endl;
+
+        if (operation == 'w') {
+            char new_name[10];
+            double new_hours;
+
+            ReadFile(h_named_pipe, &new_name, sizeof(char) * 10, NULL, NULL);
+            ReadFile(h_named_pipe, &new_hours, sizeof(double), NULL, NULL);
+
+            strcpy_s(employee.name, new_name);
+            employee.hours = new_hours;
+
+            system("pause");
+
+            WriteFile(h_named_pipe, &employee, sizeof(Employee), NULL, NULL);
+        }
+
+        system("pause");
+
+        WriteFile(h_named_pipe, &complete, sizeof(char), NULL, NULL);
+    }
+
+    CloseHandle(h_named_pipe);
     
     return 0;
 }
