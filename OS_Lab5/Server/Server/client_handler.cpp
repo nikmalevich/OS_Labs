@@ -55,9 +55,11 @@ DWORD WINAPI client_handler(LPVOID pipe) {
 			WriteFile(h_named_pipe, &employee, sizeof(Employee), NULL, NULL);
 			ReadFile(h_named_pipe, &complete, sizeof(char), NULL, NULL);
 
-			ReleaseMutex(h_write_employee_mutex[employee_index]);
-
 			num_readers[employee_index]--;
+
+			if (num_readers[employee_index] == 0) {
+				ReleaseMutex(h_write_employee_mutex[employee_index]);
+			}
 		}
 		else {
 			WaitForSingleObject(h_write_employee_mutex[employee_index], INFINITE);

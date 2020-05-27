@@ -20,16 +20,16 @@ int main()
         cout << "Enter the operation. Write(w), read(r), exit(e): ";
         cin >> operation;
 
-        int employee_id;
-
-        cout << "Enter employee ID: ";
-        cin >> employee_id;
-
         WriteFile(h_named_pipe, &operation, sizeof(char), NULL, NULL);
 
         if (operation == 'e') {
             break;
         }
+
+        int employee_id;
+
+        cout << "Enter employee ID: ";
+        cin >> employee_id;
 
         WriteFile(h_named_pipe, &employee_id, sizeof(int), NULL, NULL);
 
